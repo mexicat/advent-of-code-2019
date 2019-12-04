@@ -36,16 +36,16 @@ defmodule AdventOfCode.Day03 do
 
         case dir do
           "U" ->
-            {{x, y + amt}, for(d <- y..(y + amt - 1), do: {x, d}, into: positions)}
+            {{x, y + amt}, positions ++ for(d <- y..(y + amt - 1), do: {x, d})}
 
           "D" ->
-            {{x, y - amt}, for(d <- y..(y - amt + 1), do: {x, d}, into: positions)}
+            {{x, y - amt}, positions ++ for(d <- y..(y - amt + 1), do: {x, d})}
 
           "R" ->
-            {{x + amt, y}, for(d <- x..(x + amt - 1), do: {d, y}, into: positions)}
+            {{x + amt, y}, positions ++ for(d <- x..(x + amt - 1), do: {d, y})}
 
           "L" ->
-            {{x - amt, y}, for(d <- x..(x - amt + 1), do: {d, y}, into: positions)}
+            {{x - amt, y}, positions ++ for(d <- x..(x - amt + 1), do: {d, y})}
         end
       end
     )
