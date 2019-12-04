@@ -2,15 +2,13 @@ defmodule AdventOfCode.Day04 do
   def part1(range) do
     range
     |> Enum.map(&valid_password?/1)
-    |> Enum.filter(& &1)
-    |> Enum.count()
+    |> Enum.count(& &1)
   end
 
   def part2(range) do
     range
     |> Enum.map(&valid_password_2?/1)
-    |> Enum.filter(& &1)
-    |> Enum.count()
+    |> Enum.count(& &1)
   end
 
   def valid_password?(password) do
