@@ -51,8 +51,8 @@ defmodule AdventOfCode.Day11 do
     max_x = grid |> Enum.map(fn {{x, _y}, _} -> x end) |> Enum.max()
     max_y = grid |> Enum.map(fn {{_x, y}, _} -> y end) |> Enum.max()
 
-    for x <- 0..max_x do
-      for y <- 0..max_y do
+    for y <- 0..max_y do
+      for x <- 0..max_x do
         case Map.get(grid, {x, y}) do
           1 -> "#"
           _ -> " "
