@@ -1,7 +1,6 @@
 defmodule AdventOfCode.Day11 do
   def part1(program) do
     agent = IntCode.new(program, nil)
-
     IntCode.set_input(agent, 0)
 
     agent
@@ -11,7 +10,6 @@ defmodule AdventOfCode.Day11 do
 
   def part2(program) do
     agent = IntCode.new(program, nil)
-
     IntCode.set_input(agent, 1)
 
     agent
@@ -25,18 +23,18 @@ defmodule AdventOfCode.Day11 do
       Stream.repeatedly(fn -> IntCode.next(agent) end),
       {:up, {0, 0}, true, %{{0, 0} => 0}},
       fn
+        {:out, intcode}, {dir, pos, true, grid} ->
+          # paint
+          grid = Map.put(grid, pos, intcode.input)
+          {:cont, {dir, pos, nil, grid}}
+
         {:out, intcode}, {dir, pos, nil, grid} ->
           # move
           new_dir = change_direction(dir, intcode.input)
-          {new_x, new_y} = move(pos, new_dir)
-          new_color = Map.get(grid, {new_x, new_y}, 0)
+          new_pos = move(pos, new_dir)
+          new_color = Map.get(grid, new_pos, 0)
           IntCode.set_input(agent, new_color)
-          {:cont, {new_dir, {new_x, new_y}, true, grid}}
-
-        {:out, intcode}, {dir, {x, y}, true, grid} ->
-          # paint
-          grid = grid |> Map.put({x, y}, intcode.input)
-          {:cont, {dir, {x, y}, nil, grid}}
+          {:cont, {new_dir, new_pos, true, grid}}
 
         {:stop, _}, {_, _, _, grid} ->
           {:halt, grid}
@@ -65,7 +63,7 @@ defmodule AdventOfCode.Day11 do
 
   def change_direction(dir, to) do
     clockwise = %{up: :right, right: :down, down: :left, left: :up}
-    counterclockwise = clockwise |> Enum.map(fn {k, v} -> {v, k} end) |> Enum.into(%{})
+    counterclockwise = clockwise |> Enum.map(fn {k, v} -> {v, k} end) |> Map.new()
 
     case to do
       1 -> Map.get(clockwise, dir)
