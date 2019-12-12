@@ -7,13 +7,12 @@ defmodule AdventOfCode.Day12 do
   end
 
   def part2(input) do
-    moons =
+    %{x: x, y: y, z: z} =
       input
       |> parse_input()
+      |> find_repeating()
 
-    find_repeating(moons, :x)
-    |> lcm(find_repeating(moons, :y))
-    |> lcm(find_repeating(moons, :z))
+    x |> lcm(y) |> lcm(z)
   end
 
   def parse_input(input) do
@@ -74,27 +73,40 @@ defmodule AdventOfCode.Day12 do
     |> Enum.sum()
   end
 
-  def calc_energy(moon) do
+  defp calc_energy(moon) do
     (abs(moon.pos.x) + abs(moon.pos.y) + abs(moon.pos.z)) *
       (abs(moon.vel.x) + abs(moon.vel.y) + abs(moon.vel.z))
   end
 
-  def find_repeating(moons, axis) do
+  def find_repeating(moons) do
     moons
     |> Stream.iterate(&(&1 |> apply_gravity() |> apply_velocity()))
-    |> Enum.reduce_while(MapSet.new(), fn moons, acc ->
-      point = for m <- moons, do: {Map.get(m.pos, axis), Map.get(m.vel, axis)}
+    |> Enum.reduce_while(%{x: MapSet.new(), y: MapSet.new(), z: MapSet.new()}, fn moons, acc ->
+      acc =
+        acc
+        |> Enum.map(fn
+          {axis, n} when is_integer(n) ->
+            {axis, n}
 
-      if MapSet.member?(acc, point),
-        do: {:halt, MapSet.size(acc)},
-        else: {:cont, MapSet.put(acc, point)}
+          {axis, set} ->
+            points = for m <- moons, do: {Map.get(m.pos, axis), Map.get(m.vel, axis)}
+
+            if MapSet.member?(set, points),
+              do: {axis, MapSet.size(set)},
+              else: {axis, MapSet.put(set, points)}
+        end)
+        |> Map.new()
+
+      if is_integer(acc.x) && is_integer(acc.y) && is_integer(acc.z),
+        do: {:halt, acc},
+        else: {:cont, acc}
     end)
   end
 
-  def gcd(a, 0), do: a
-  def gcd(0, b), do: b
-  def gcd(a, b), do: gcd(b, rem(a, b))
+  defp gcd(a, 0), do: a
+  defp gcd(0, b), do: b
+  defp gcd(a, b), do: gcd(b, rem(a, b))
 
-  def lcm(0, 0), do: 0
-  def lcm(a, b), do: div(a * b, gcd(a, b))
+  defp lcm(0, 0), do: 0
+  defp lcm(a, b), do: div(a * b, gcd(a, b))
 end
