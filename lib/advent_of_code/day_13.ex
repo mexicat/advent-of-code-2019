@@ -26,19 +26,16 @@ defmodule AdventOfCode.Day13 do
           {:cont, {[], grid}}
 
         {:out, intcode}, {[y, x], grid} ->
-          case intcode.input do
-            4 ->
-              paddle = grid |> Enum.find(fn {_pos, tile} -> tile == 3 end)
+          if intcode.input == 4 do
+            # find the paddle so we can reposition
+            paddle = Enum.find(grid, fn {_pos, tile} -> tile == 3 end)
 
-              case paddle do
-                nil -> nil
-                {{paddle_x, _}, _} when paddle_x > x -> IntCode.set_input(agent, -1)
-                {{paddle_x, _}, _} when paddle_x < x -> IntCode.set_input(agent, 1)
-                _ -> IntCode.set_input(agent, 0)
-              end
-
-            _ ->
-              nil
+            case paddle do
+              nil -> nil
+              {{paddle_x, _}, _} when paddle_x > x -> IntCode.set_input(agent, -1)
+              {{paddle_x, _}, _} when paddle_x < x -> IntCode.set_input(agent, 1)
+              _ -> IntCode.set_input(agent, 0)
+            end
           end
 
           grid = Map.put(grid, {x, y}, intcode.input)
@@ -72,7 +69,6 @@ defmodule AdventOfCode.Day13 do
           _ -> " "
         end
       end
-      |> Kernel.++([y])
       |> Enum.join()
     end
     |> Enum.join("\n")
