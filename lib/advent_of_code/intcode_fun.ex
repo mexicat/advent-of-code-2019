@@ -1,13 +1,17 @@
 defmodule IntCodeFun do
   @enforce_keys [:phase, :input, :opcodes]
-  defstruct [:phase, :input, :opcodes, at: 0, rel_base: 0]
+  defstruct [:phase, :input, :opcodes, at: 0, rel_base: 0, output: []]
 
   def new(opcodes, phase) do
-    %IntCode{phase: phase, input: 0, opcodes: opcodes}
+    %__MODULE__{phase: phase, input: [], opcodes: opcodes}
+  end
+
+  def set_input(intcode, input) when is_list(input) do
+    Map.put(intcode, :input, intcode.input ++ input)
   end
 
   def set_input(intcode, input) do
-    Map.put(intcode, :input, input)
+    Map.put(intcode, :input, intcode.input ++ [input])
   end
 
   def run(intcode) do
@@ -20,9 +24,9 @@ defmodule IntCodeFun do
 
       {:stop, intcode} ->
         IO.inspect(intcode)
-        :stop
+        {:stop, intcode}
     end)
-    |> Enum.find(&(&1 == :stop))
+    |> Enum.find(&(elem(&1, 0) == :stop))
   end
 
   def run_until_output(intcode) do
@@ -35,9 +39,9 @@ defmodule IntCodeFun do
 
       {:stop, intcode} ->
         IO.inspect(intcode)
-        :stop
+        {:stop, intcode}
     end)
-    |> Enum.find(&(is_tuple(&1) && elem(&1, 0) == :out))
+    |> Enum.find(&(elem(&1, 0) == :out))
   end
 
   def next(intcode = %{opcodes: opcodes, at: at}) do
@@ -123,19 +127,21 @@ defmodule IntCodeFun do
   end
 
   def save(intcode, a) do
+    [input | rest_of_input] = intcode.input
+
     opcodes =
       replace_at(
         intcode.opcodes,
         a,
-        if(intcode.phase, do: intcode.phase, else: intcode.input)
+        input
       )
 
-    {:cont, %{intcode | opcodes: opcodes, phase: nil, at: intcode.at + 2}}
+    {:cont, %{intcode | opcodes: opcodes, phase: nil, input: rest_of_input, at: intcode.at + 2}}
   end
 
   def output(intcode, a) do
     # IO.puts("output: #{a}")
-    {:out, %{intcode | input: a, at: intcode.at + 2}}
+    {:out, %{intcode | output: [a | intcode.output], at: intcode.at + 2}}
   end
 
   def jump_if_true(intcode, a, b) do
